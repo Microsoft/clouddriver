@@ -312,11 +312,9 @@ class AzureNetworkClient extends AzureBaseClient {
           agDescription.serverGroups = [serverGroupName]
         }
         appGateway.tags.cluster = parsedName.cluster
-        // TODO: debug only; remove this as part of the cleanup
-        appGateway.tags.serverGroups = agDescription.serverGroups.join(" ")
         log.info("Adding backend address pool to ${appGateway.name} for server group ${serverGroupName}")
         executeOp({appGatewayOps.createOrUpdate(resourceGroupName, appGatewayName, appGateway)})
-        log.info("Backend address pool added")
+        log.info("Backend address pool ${appGateway.id}/backendAddressPools/${serverGroupName} was successfully added")
       }
 
       return "${appGateway.id}/backendAddressPools/${serverGroupName}"
@@ -349,15 +347,6 @@ class AzureNetworkClient extends AzureBaseClient {
         if (appGateway.backendAddressPools.size() == 1) {
           // There are no server groups assigned to ths application gateway; we can make it available now
           appGateway.tags.remove("cluster")
-        }
-
-        // TODO: debug only; remove this as part of the cleanup
-        agDescription.serverGroups?.remove(serverGroupName)
-        if (!agDescription.serverGroups || agDescription.serverGroups.isEmpty()) {
-          appGateway.tags.remove("serverGroups")
-        } else {
-          appGateway.tags.remove("serverGroups")
-          appGateway.tags.serverGroups = agDescription.serverGroups.join(" ")
         }
 
         executeOp({appGatewayOps.createOrUpdate(resourceGroupName, appGatewayName, appGateway)})
